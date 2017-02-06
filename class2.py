@@ -39,7 +39,7 @@ test_set = []
 for i in xrange(num_test):
     x1= np.random.normal(0.0, 0.55)
     y1= x1 * 0.1 + 0.3 + np.random.normal(0.0, 0.03)
-    z1= x1 * 0.2 + 0.4 + np.random.normal(0.0, 0.10) 
+    z1= x1 * 0.2 + 0.5 + np.random.normal(0.0, 0.10) 
     test_set.append([x1, y1, z1])
 
 x_test = [v[0] for v in test_set]
