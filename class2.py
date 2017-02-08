@@ -18,8 +18,8 @@ print_how_often = 100
 
 for i in xrange(num_points):
     x1= np.random.normal(0.0, 0.55)
-    y1= x1 * 0.1 + 0.3 + np.random.normal(0.0, 0.03) 
-    z1= x1 * 0.2 + 0.4 + np.random.normal(0.0, 0.10)
+    y1= x1 * 0.1 + 0.3 + np.random.normal(0.0, 0.05) 
+    z1= x1 * 0.2 + y1 * 0.4 + np.random.normal(0.0, 0.10)
     train_set.append([x1, y1, z1])
    
 
@@ -38,8 +38,8 @@ test_set = []
 
 for i in xrange(num_test):
     x1= np.random.normal(0.0, 0.55)
-    y1= x1 * 0.1 + 0.3 + np.random.normal(0.0, 0.03)
-    z1= x1 * 0.2 + 0.5 + np.random.normal(0.0, 0.10) 
+    y1= x1 * 0.1 + 0.3 + np.random.normal(0.0, 0.15) #changed y1 param from training
+    z1= 0.4 * y1 +  np.random.normal(0.0, 0.10) #changed z1 param from training
     test_set.append([x1, y1, z1])
 
 x_test = [v[0] for v in test_set]
@@ -152,7 +152,6 @@ plt.show()
 
 print train_loss_history
 print test_loss_history
-
 
 
 plt.plot(steps,train_loss_history,'ro')
