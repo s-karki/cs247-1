@@ -30,7 +30,7 @@ x_train = [v[0] for v in train_set]
 y_train = [v[1] for v in train_set]
 z_train = [v[2] for v in train_set] 
 
-printXY(x_train,y_train,'Original data')
+# printXY(x_train,y_train,'Original data')
 
 " generate a test set"
 num_test = 500
@@ -38,7 +38,7 @@ test_set = []
 
 for i in xrange(num_test):
     x1= np.random.normal(0.0, 0.55)
-    y1= x1 * 0.1 + 0.3 + np.random.normal(0.0, 0.15) #changed y1 param from training
+    y1= (x1 ** 2) * 0.1 + 0.3 + np.random.normal(0.0, 0.15) #changed y1 param from training
     z1= 0.4 * y1 +  np.random.normal(0.0, 0.10) #changed z1 param from training
     test_set.append([x1, y1, z1])
 
@@ -47,7 +47,7 @@ y_test = [v[1] for v in test_set]
 z_test = [v[2] for v in test_set] 
 
 
-printXY(x_test,y_test,'Test Data')
+# printXY(x_test,y_test,'Test Data')
 
 
 # Set up the tensorflow model   placeholders for the batch training data 
@@ -83,7 +83,7 @@ steps = []
 
 
 batchloss = tf.reduce_mean(tf.square(z_batch - z_batch_predicted))
-optimizer = tf.train.GradientDescentOptimizer(0.1) 
+optimizer = tf.train.GradientDescentOptimizer(0.1)
 
 
 train = optimizer.minimize(batchloss)
@@ -132,28 +132,33 @@ for step in xrange(batch_iter):
  
  
     if step % print_how_often  == 0:
-        print 'After step #',step, 'W: ', sess.run(W), 'V: ', sess.run(V), 'b: ', sess.run(b),' Loss:', sess.run(trainloss) #stop here 
+        print 'After step #',step, 'W: ', sess.run(W), 'V: ', sess.run(V), 'b: ', sess.run(b),' Loss:', sess.run(trainloss) 
         print 'Test loss ',sess.run(testloss)
         train_loss_history.append(sess.run(trainloss))
         test_loss_history.append(sess.run(testloss))
         steps.append(step)
-    
+
+
+    '''
         plt.plot(x_train,y_train,'ro',label = str(step))
  #   plt.plot(x_test,y_test,'bo',label = str(step))
         plt.plot(x_train,sess.run(W)*x_train+sess.run(b))
         plt.legend()
         plt.show()
+    '''
 
-
+'''
 plt.plot(x_train,y_train,'ro',label = str(step))
 plt.plot(x_train,sess.run(W)*x_train+sess.run(b))
 plt.legend()
 plt.show()
+'''
 
 print train_loss_history
 print test_loss_history
 
 
-plt.plot(steps,train_loss_history,'ro')
-plt.plot(steps,test_loss_history,'bo')
+plt.plot(steps,train_loss_history,'ro', label = "Training Loss")
+plt.plot(steps,test_loss_history,'bo', label = "Testing Loss")
+plt.legend()
 plt.show()
