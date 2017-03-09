@@ -1,0 +1,27 @@
+13/2/17
+Programming Assignment 1
+
+Group Members: 
+Saharsha Karki,
+Reynaldo Pena,
+Azka Javaid,
+Jordan Browning
+
+We added a third parameter, z, to the program (where z is a linear combination of variables x and y, z = Wx + Vy + b). We commented all lines that plot the training set, and only plot the training loss and testing loss when the algorithm completes. 
+
+The program will attempt to minimize the squared mean of z_batch - z_predicted (batchloss). 
+
+We modified the generation of the training and testing sets, such that they were not the same.
+We added a quadratic relationship between y and x for the generation of the testing set. 
+ 
+For the training-set generation: 
+x = np.random.normal(0, 0.55)
+y = 0.1x + 0.3 + np.random.normal(0, 0.05)
+z = 0.2x + 0.4y + np.random.normal(0, 0.1)
+
+For the testing-set generation: 
+x = np.random.normal(0, 0.55)
+y = 0.1x^2 + 0.3 + np.random.normal(0, 0.15) 
+z = 0.4y + np.random.normal(0, 0.1) 
+
+Each time we ran the program, the training loss was lower than the testing loss for each step. We expected this outcome--the testing set generation differed to the training set generation.
