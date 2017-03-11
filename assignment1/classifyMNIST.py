@@ -14,16 +14,16 @@ print 'Validation Set count ', mnist.validation.images.shape
 
 #the length of each input is determined by the data file
 
-
+#epocs was 10000
 training_size = 1000
-epochs = 10000
+epochs = 12000
 howOften = 500
 batch_size = 10
 
 # default hyperparameters
 
 hiddenLayerSize = 10
-learning_rate = 0.1
+learning_rate = 35 # was 0.1
 
 print sys.argv
 
@@ -81,17 +81,12 @@ decoded = tf.nn.sigmoid(tf.matmul(encoded, weightsHidOut) + biasesOut)
 loss = (tf.reduce_mean(tf.square(tf.sub(y, decoded))))
 train_op = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 
-# Changed 
-# y_ = tf.placeholder(tf.float32, [None, 10])
-
-# actual within a certain threshold of predicted. 
-
-#print("decoded", tf.argmax(weightsHidOut, 1))
-#print("y", y)
 
 
-correct_prediction = tf.sub(decoded, y)
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32)) 
+# correct_prediction = tf.sub(decoded, y))
+# accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32)) 
+
+
 
 num_samples = len(points)
 print 'Number of Samples',num_samples
@@ -103,19 +98,40 @@ init = tf.global_variables_initializer()
 sess = tf.Session() 
 sess.run(init)
 
+
 test_writer = tf.summary.FileWriter('./test', sess.graph)
 
 
 
+def findIndex(nparray):
+    for x in np.nditer(nparray):
+        
+        if x == 1:
+            return x
 
 def checkErrors(ins,outs,flag=False):
     errors = 0
     print "Number of Tests ",len(ins)
     for k in range(len(ins)):
-        acc, l, d = sess.run([accuracy, loss ,decoded], feed_dict={x: [ins[k]], y:[outs[k]]}) #acc, loss to accuracy
-       #  print("acc", acc)
-        if (acc > 0.15):
-            errors = errors +1
+        l, d = sess.run([loss ,decoded], feed_dict={x: [ins[k]], y:[outs[k]]}) #acc, loss to accuracy
+        
+        # print("decoded", d)
+        # print("outs", outs[k])
+
+        # A more precise classifier
+        # Find the number that algo should predict
+
+        i = outs[k].tolist().index(1)
+
+        # print("i", i)
+        # print("d[i]", d[0][i], type(d[0][i].item()))
+
+        if d[0][i] < 0.85:
+            errors = errors + 1
+
+        #if (l > 0.05):
+        #   errors = errors +1
+
         if flag:
             print "test number and error", k, l
             print "predicted"
@@ -142,8 +158,6 @@ for i in range(epochs):
         big_loss = sess.run(loss,feed_dict={x:points,y:pointsA})
         valid_loss = sess.run(loss,feed_dict={x:validation,y:validationA})
 
-        big_acc = sess.run(accuracy, feed_dict={x: points, y: pointsA})
-        print 'Total accuracy', big_acc
         print 'Total loss', big_loss
         print 'Validation Set Loss', valid_loss 
         write2 = sess.run(sum2, feed_dict={x:points,y:pointsA})
