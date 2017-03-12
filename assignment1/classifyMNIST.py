@@ -16,14 +16,14 @@ print 'Validation Set count ', mnist.validation.images.shape
 
 #epocs was 10000
 training_size = 1000
-epochs = 12000
+epochs = 10000
 howOften = 500
 batch_size = 10
 
 # default hyperparameters
 
 hiddenLayerSize = 10
-learning_rate = 35 # was 0.1
+learning_rate = 25  # was 0.1
 
 print sys.argv
 
@@ -102,12 +102,15 @@ sess.run(init)
 test_writer = tf.summary.FileWriter('./test', sess.graph)
 
 
-
-def findIndex(nparray):
-    for x in np.nditer(nparray):
-        
-        if x == 1:
-            return x
+def otherIndexProb(arr, i):
+    j = 0
+    for x in range(len(arr)):
+        if j != i and  arr[0][j] > 0.85:
+            return True
+        j = j + 1
+    return False
+   
+         
 
 def checkErrors(ins,outs,flag=False):
     errors = 0
@@ -120,13 +123,12 @@ def checkErrors(ins,outs,flag=False):
 
         # A more precise classifier
         # Find the number that algo should predict
+        # See if P(N) < 0.85, or if P(~N) > 0.85. In either case
+        # we say the program has incorrectly classified
 
         i = outs[k].tolist().index(1)
 
-        # print("i", i)
-        # print("d[i]", d[0][i], type(d[0][i].item()))
-
-        if d[0][i] < 0.85:
+        if d[0][i] < 0.85 or otherIndexProb(d, i) :
             errors = errors + 1
 
         #if (l > 0.05):
