@@ -23,7 +23,8 @@ batch_size = 10
 # default hyperparameters
 
 hiddenLayerSize = 10
-learning_rate = 25  # was 0.1
+learning_rate = 2  # was 0.1
+momentum = 0.9
 
 print sys.argv
 
@@ -57,6 +58,7 @@ print "hidden layer size ", hiddenLayerSize
 print "learning rate     ", learning_rate
 print "training size     ", len(points)
 print "validation size   ", len(validation)
+print "momentum          ", momentum
 
 def display_digit(X):
     image = X.reshape([28,28])
@@ -79,7 +81,7 @@ biasesOut = tf.Variable(tf.zeros([outputLayerSize]), name='biasesOut')
 decoded = tf.nn.sigmoid(tf.matmul(encoded, weightsHidOut) + biasesOut)
 
 loss = (tf.reduce_mean(tf.square(tf.sub(y, decoded))))
-train_op = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
+train_op = tf.train.MomentumOptimizer(learning_rate, momentum).minimize(loss)
 
 
 
