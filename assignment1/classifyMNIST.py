@@ -6,7 +6,6 @@ import sys
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
-
 print 'Training   Set count ', mnist.train.images.shape
 print 'Testing Set count '   , mnist.test.images.shape
 print 'Validation Set count ', mnist.validation.images.shape
@@ -61,6 +60,7 @@ print "learning rate     ", learning_rate
 print "training size     ", len(points)
 print "validation size   ", len(validation)
 print "momentum          ", momentum
+print "beta              ", beta
 
 def display_digit(X):
     image = X.reshape([28,28])
@@ -89,7 +89,7 @@ biasesOut = tf.Variable(tf.zeros([outputLayerSize]), name='biasesOut')
 decoded = tf.nn.sigmoid(tf.matmul(encoded, weightsHidOut) + biasesOut)
 
 #l2_term =  tf.nn.l2_loss(weightsHidOut)
-l2_term = beta * (tf.nn.l2_loss(weightsInHid) +  tf.nn.l2_loss(weightsHidOut))
+l2_term = beta * (tf.nn.l2_loss(weightsInHid) + tf.nn.l2_loss(weightsHidOut))
 loss_no_l2 = tf.reduce_mean(tf.square(tf.sub(y, decoded)))
 
 loss =  loss_no_l2 + l2_term
@@ -116,23 +116,20 @@ def otherIndexProb(arr, i):
             return True
         j = j + 1
     return False
-   
-         
-
+           
 def checkErrors(ins,outs,flag=False):
     errors = 0
     print "Number of Tests ",len(ins)
     for k in range(len(ins)):
         l, d = sess.run([loss ,decoded], feed_dict={x: [ins[k]], y:[outs[k]]}) #acc, loss to accuracy
         
-
         # A more precise classifier
         # Find the number that algo should predict
         # See if P(N) < 0.85, or if P(~N) > 0.85. In either case
         # we say the program has incorrectly classified
 
         i = outs[k].tolist().index(1)
-        if d[0][i] < 0.85 or otherIndexProb(d, i):
+        if d[0][i] < 0.75 or otherIndexProb(d, i) :
             errors = errors + 1
 
         #if (l > 0.05):
@@ -188,5 +185,5 @@ checkErrors(points, pointsA)
 checkErrors(validation, validationA,False)
 
 plot_loss(validLoss, trainingLoss)
-exit()
 
+exit()
