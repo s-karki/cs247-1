@@ -7,10 +7,9 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
 
-print 'Testing   Set count ', mnist.train.images.shape
-print 'Training   Set count ', mnist.test.images.shape
+print 'Training   Set count ', mnist.train.images.shape
+print 'Testing Set count '   , mnist.test.images.shape
 print 'Validation Set count ', mnist.validation.images.shape
-
 
 #the length of each input is determined by the data file
 
@@ -19,10 +18,10 @@ training_size = 1000
 epochs = 10000
 howOften = 500
 batch_size = 10
-
+beta = 0.0001
 # default hyperparameters
 
-hiddenLayerSize = 10
+hiddenLayerSize = 30
 learning_rate = 2  # was 0.1
 momentum = 0.9
 
@@ -44,7 +43,10 @@ for o in range(1,len(sys.argv),2):
         batch_size = int(sys.argv[o+1])
 
 points = mnist.test.images[:training_size,:]
-pointsA = mnist.test.labels[:training_size,:]
+pointsA = mnist.test.labels[:training_size,:] # initially, we had a small training set
+
+train = mnist.train.images[:training_size,:]
+trainA = mnist.train.labels[:training_size,:]  #we now move to a larger training set
 
 validation = mnist.validation.images
 validationA = mnist.validation.labels
@@ -64,7 +66,13 @@ def display_digit(X):
     image = X.reshape([28,28])
     plt.imshow(image, cmap=plt.get_cmap('gray_r'))
     plt.show()
+
+def plot_loss(valid, training):
+    plt.plot(valid, 'ro')
+    plt.plot(training, 'bo')
+    plt.show()
     
+
 
 # some number of inputs, each of which is the size of the input layer
 
@@ -80,15 +88,12 @@ weightsHidOut = tf.Variable(tf.random_normal([hiddenLayerSize, outputLayerSize],
 biasesOut = tf.Variable(tf.zeros([outputLayerSize]), name='biasesOut')
 decoded = tf.nn.sigmoid(tf.matmul(encoded, weightsHidOut) + biasesOut)
 
-loss = (tf.reduce_mean(tf.square(tf.sub(y, decoded))))
+#l2_term =  tf.nn.l2_loss(weightsHidOut)
+l2_term = beta * (tf.nn.l2_loss(weightsInHid) +  tf.nn.l2_loss(weightsHidOut))
+loss_no_l2 = tf.reduce_mean(tf.square(tf.sub(y, decoded)))
+
+loss =  loss_no_l2 + l2_term
 train_op = tf.train.MomentumOptimizer(learning_rate, momentum).minimize(loss)
-
-
-
-# correct_prediction = tf.sub(decoded, y))
-# accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32)) 
-
-
 
 num_samples = len(points)
 print 'Number of Samples',num_samples
@@ -120,8 +125,6 @@ def checkErrors(ins,outs,flag=False):
     for k in range(len(ins)):
         l, d = sess.run([loss ,decoded], feed_dict={x: [ins[k]], y:[outs[k]]}) #acc, loss to accuracy
         
-        # print("decoded", d)
-        # print("outs", outs[k])
 
         # A more precise classifier
         # Find the number that algo should predict
@@ -129,8 +132,7 @@ def checkErrors(ins,outs,flag=False):
         # we say the program has incorrectly classified
 
         i = outs[k].tolist().index(1)
-
-        if d[0][i] < 0.85 or otherIndexProb(d, i) :
+        if d[0][i] < 0.85 or otherIndexProb(d, i):
             errors = errors + 1
 
         #if (l > 0.05):
@@ -145,26 +147,33 @@ def checkErrors(ins,outs,flag=False):
             
     print "Total probable errors ", errors
 
+validLoss = []
+trainingLoss = []
 
 for i in range(epochs):
     trainPoints = []
     trainPointsA = []
+
     for j in range(batch_size):
         r = np.random.randint(0,num_samples)
-        trainPoints.append(points[r])
-        trainPointsA.append(pointsA[r])
+        trainPoints.append(train[r])
+        trainPointsA.append(trainA[r])
                           
-    l, _ = sess.run([loss, train_op], feed_dict={x: trainPoints, y:trainPointsA})
-    write1 = sess.run(sum1, feed_dict={x:trainPoints,y:trainPointsA})
+    l, _ = sess.run([loss, train_op], feed_dict={x: trainPoints, y: trainPointsA}) # different training set (actual training set)
+    write1 = sess.run(sum1, feed_dict={x: trainPoints,y:trainPointsA}) 
     test_writer.add_summary(write1,i*epochs+j)
     if i % howOften == 0:
         print 'epoch ',i
-        big_loss = sess.run(loss,feed_dict={x:points,y:pointsA})
-        valid_loss = sess.run(loss,feed_dict={x:validation,y:validationA})
+        big_loss = sess.run(loss_no_l2,feed_dict={x:train,y:trainA})
+        valid_loss = sess.run(loss_no_l2,feed_dict={x:validation,y:validationA})
+        #l2 = sess.run(l2_term,feed_dict={x:validation,y:validationA})
+        
+        trainingLoss.append(big_loss)
+        validLoss.append(valid_loss)
 
         print 'Total loss', big_loss
         print 'Validation Set Loss', valid_loss 
-        write2 = sess.run(sum2, feed_dict={x:points,y:pointsA})
+        write2 = sess.run(sum2, feed_dict={x:train,y:trainA})
         test_writer.add_summary(write2,i)
 
         print 'Test Set Errors'
@@ -172,10 +181,12 @@ for i in range(epochs):
        
         print "Validation errors"
         checkErrors(validation, validationA)
+       
 
 checkErrors(points, pointsA)
 
 checkErrors(validation, validationA,False)
 
+plot_loss(validLoss, trainingLoss)
 exit()
 
